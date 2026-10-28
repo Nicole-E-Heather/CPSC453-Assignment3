@@ -48,8 +48,17 @@ add_executable(cube
   src/opengl_loader.cpp
 )
 
+add_executable(main
+  src/main.cpp
+  src/mesh.cpp
+  src/shader.cpp
+  src/cylinder.cpp
+  src/rectangle.cpp
+  src/opengl_loader.cpp
+)
+
 # Tell compiler where to find gl.h
-foreach(target sphere cube)
+foreach(target sphere cube main)
     target_include_directories(${target} PRIVATE
         include
         ${stb_SOURCE_DIR}
