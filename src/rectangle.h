@@ -10,5 +10,9 @@ struct RectangleGeometry {
     std::vector<unsigned int> indices;
 };
 
-RectangleGeometry makeRectangle();
-void rotateRect(Mesh& mesh, float radians);
+RectangleGeometry makeRectangle(float l, float w, float h);
+void translateRect(Mesh& mesh);
+
+void PitchRect(Mesh& mesh, float radians);
+void RollRect(Mesh& mesh, float radians);
+void YawRect(Mesh& mesh, float radians);

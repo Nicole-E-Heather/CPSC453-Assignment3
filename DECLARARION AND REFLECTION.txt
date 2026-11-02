@@ -16,7 +16,7 @@ INTENT PLEDGE: Before starting this assignment, my intention
 for using (or not using) AI tools to support my learning was:
 [ ] I plan to use GenAI as an interactive tutor/study aid.
 [ ] I plan to use GenAI only for debugging or syntax help.
-[ ] I do not plan to use GenAI for this assignment.
+[*] I do not plan to use GenAI for this assignment.
 
 State briefly how you intended GenAI to support your learning:
 
@@ -43,7 +43,6 @@ List any documentation, textbooks, or reference sites used
 (e.g., cppreference.com, language specs, course notes).
 
 Sources:
-
 
 ----------------------------------------------------------------
 4. GENERATIVE AI PROCESS & REFLECTION

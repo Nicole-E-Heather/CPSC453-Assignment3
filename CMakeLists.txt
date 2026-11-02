@@ -54,6 +54,7 @@ add_executable(main
   src/shader.cpp
   src/cylinder.cpp
   src/rectangle.cpp
+  src/joint.cpp
   src/opengl_loader.cpp
 )
 
