@@ -7,3 +7,6 @@ struct CylinderGeometry {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
 };
+
+void rotateCylinder(Mesh& mesh, float radians);
+CylinderGeometry makeCylinder(float height, float radius);
