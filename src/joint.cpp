@@ -33,7 +33,7 @@ void rotateWristJoint(Mesh& mesh, float radians) {
 }
 
 void rotateFingerJoint(Mesh& mesh, float radians) {
-    
+
 }
 
 JointGeometry makeJoint(float radius)
@@ -63,7 +63,7 @@ JointGeometry makeJoint(float radius)
             Vertex vertex;
             vertex.position = normal;
             vertex.normal = normal;
-            vertex.texCoord = glm::vec2(2*u, 1.0f - v);
+           // vertex.texCoord = glm::vec2(2*u, 1.0f - v);
             sphere.vertices.push_back(vertex);
         }
     }

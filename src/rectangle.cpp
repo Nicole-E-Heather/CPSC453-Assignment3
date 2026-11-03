@@ -24,7 +24,7 @@ Vertex makeVertex(const glm::vec3& position, const glm::vec2& texCoord, int face
     Vertex vertex;
     vertex.position = position;
     //vertex.normal = position;
-    vertex.texCoord = texCoord;
+    //vertex.texCoord = texCoord; // no text coord becuase it non-asssigned
 
     if (face == 0) { // Front
         vertex.normal = glm::vec3(1.0f, 0.0f, 0.0f);

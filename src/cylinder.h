@@ -8,5 +8,8 @@ struct CylinderGeometry {
     std::vector<unsigned int> indices;
 };
 
-void rotateCylinder(Mesh& mesh, float radians);
-CylinderGeometry makeCylinder(float height, float radius);
+void PitchCylinder(Mesh& mesh, float radians);
+void RollCylinder(Mesh& mesh, float radians);
+void YawCylinder(Mesh& mesh, float radians);
+
+CylinderGeometry makeCylinder(float height, float radius, bool base);

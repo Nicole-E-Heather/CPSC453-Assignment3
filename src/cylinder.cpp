@@ -18,11 +18,28 @@
 
 // Code based on sphere/cube starter code
 
-void rotateCylinder(Mesh& mesh, float radians){
+void PitchCylinder(Mesh& mesh, float radians) {
     // do whatever to rotate
+    mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
+                        radians,
+                        glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
 }
 
-CylinderGeometry makeCylinder(float height, float radius) {
+void RollCylinder(Mesh& mesh, float radians) {
+    // do whatever to rotate
+    mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
+                        radians,
+                        glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f))));
+}
+
+void YawCylinder(Mesh& mesh, float radians) {
+    // do whatever to rotate
+    mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
+                        radians,
+                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f))));
+}
+
+CylinderGeometry makeCylinder(float height, float radius, bool base) {
 
     // can scale by raidus and height after
     
@@ -38,8 +55,8 @@ CylinderGeometry makeCylinder(float height, float radius) {
 
     // Generate top 2D circle vetices
     for (unsigned int slice = 0; slice <= slices_circle; slice++) {
-        // 0 because its a 2D surface
-        const float v = 0.0f;
+        // Double check v
+        const float v = static_cast<float>(slice) / static_cast<float>(slices_circle);
         // calculated using the 2D coordinates from slices and total slices
         const float u = static_cast<float>(slice) / static_cast<float>(slices_circle);
         // find the angle of the current slice
@@ -53,7 +70,11 @@ CylinderGeometry makeCylinder(float height, float radius) {
         // Because this is the top, set normal vector facing up.
         vertex.normal = glm::vec3(0, 1, 0);
         // Text coordinates using u and v
-        vertex.texCoord = glm::vec2(2*u, 1.0f - v);
+
+        if (base == true) {
+            vertex.texCoord = glm::vec2(u, v);
+        }
+
         cyl.vertices.push_back(vertex);
     }
 
@@ -80,10 +101,12 @@ CylinderGeometry makeCylinder(float height, float radius) {
                                  radius * std::cos(theta));
             Vertex vertex;
             vertex.position = position;
-            // Because this is the top, set normal vector facing up.
+            // Normal vector points out
             vertex.normal = glm::vec3(std::cos(theta), 0, std::sin(theta)); // Change
             // Text coordinates using u and v
-            vertex.texCoord = glm::vec2(2*u, 1.0f - v);
+            if (base == false) {
+                vertex.texCoord = glm::vec2(u, v); // double check this
+            }
             cyl.vertices.push_back(vertex);
         }
     } 
