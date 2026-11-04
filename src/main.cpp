@@ -18,6 +18,37 @@
 #include "cylinder.h"
 #include "joint.h"
 
+// Each segment stores its matrices and geoetry to make 
+// subsequent transformations during runtime easier
+struct Segment {
+
+    unsigned int partIndex; // indices to keep track just in case
+
+    glm::mat4 segmentMatrix; // any shape
+    glm::mat4 parentMatrix; // Base, joint arm sphere ect
+    glm::mat4 originalMatrix; // the matrix constructed at first segment generation
+    // original is never modified unlike segment, used when arm is reset
+};
+
+// Store in a vector for easy access
+struct RobotArm {
+    std::vector<Segment> Arm;
+};
+
+RobotArm arm; // global for easy access
+
+
+void createSegment(unsigned int partIndex, glm::mat4 segment, glm::mat4 parent) {
+
+    Segment newSegment = {
+        partIndex,
+        segment,
+        parent,
+        segment
+    };
+
+    arm.Arm.push_back(newSegment);
+}
 
 int main(int argc, char* argv[]) {
 
@@ -55,7 +86,7 @@ int main(int argc, char* argv[]) {
 
         const std::filesystem::path shaderDirectory =
         std::filesystem::absolute(argv[0]).parent_path() / "shaders";
-        Material textured; // Can maybe use the same material?
+        Material textured;
         Material untextured;
 
         textured.shininess = 64.0f;
@@ -80,14 +111,9 @@ int main(int argc, char* argv[]) {
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_base_top.png",
                   textured);
-        float height = 5.0f;
-        baseMatrix = glm::translate(baseMatrix, glm::vec3(0.f, height, 0.f));
+        baseMatrix = glm::translate(baseMatrix, glm::vec3(0.f, 0.0f, 0.f));
         meshBase.applyTransform(baseMatrix);
-
-      // meshBase.applyTransform(nes, glm::vec3(0.f, height, 0.f)));
-
-        // set the parent/model matrix
-        // need to change normals for spheres
+        createSegment(0, baseMatrix, baseMatrix);
         
         // Generate sphere (shoulderJoint), with origin positioned at the top center of the base
         // Should be translated to match (0,0,0.70), 0.24
@@ -98,7 +124,8 @@ int main(int argc, char* argv[]) {
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_base_top.png",
                   untextured);
-        meshShoulderJoint.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.f, height, 0.f)));
+        meshShoulderJoint.applyTransform(baseMatrix);
+        createSegment(1, baseMatrix, baseMatrix);
 
         // Generate cylinder (upperArm), with origin set to position on top of shoulder joint
         // Should be translated to match (0,0,0.70), 2.80 / 0.22
@@ -109,8 +136,9 @@ int main(int argc, char* argv[]) {
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_arm_linkage.png",
                   textured);
-        height += 2.80f;
-        meshUpperArm.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.f, height, 0.f)));
+        baseMatrix = glm::translate(baseMatrix, glm::vec3(0.0f, 2.80f, 0.0f));
+        meshUpperArm.applyTransform(baseMatrix);
+        createSegment(2, baseMatrix, arm.Arm.at(2-1).segmentMatrix);
 
         // Generate sphere (elbowJoint), with origin set to top of upper arm
         // Should be translated to match (0,0,(0.70+2.80)), 0.20
@@ -121,7 +149,8 @@ int main(int argc, char* argv[]) {
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_base_top.png",
                   untextured);
-        meshElbowJoint.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.f, height, 0.f)));
+        meshElbowJoint.applyTransform(baseMatrix);
+        createSegment(3, baseMatrix, arm.Arm.at(3-1).segmentMatrix);
 
         // Generate cylinder (forearm), with origin top of elbowJoint/upperArm
         // Should be translated to match (0,0,(0.70+2.80)), 2.25 / 0.17
@@ -132,9 +161,9 @@ int main(int argc, char* argv[]) {
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_arm_linkage.png",
                   textured);
-        height += 2.25f;
-        meshForearm.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.f, height, 0.f)));
-
+        baseMatrix = glm::translate(baseMatrix, glm::vec3(0.0f, 2.25f, 0.0f));
+        meshForearm.applyTransform(baseMatrix);
+        createSegment(4, baseMatrix, arm.Arm.at(4-1).segmentMatrix);
 
         // Generate sphere (wristJoint), with origin to match top of forearm
         // Should be translated to match (0,0,(0.70+2.80+2.25))
@@ -145,12 +174,11 @@ int main(int argc, char* argv[]) {
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_base_top.png",
                   untextured);
-       // height += 0.10f;
-        meshWristJoint.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.f, height, 0.f)));
+        meshWristJoint.applyTransform(baseMatrix);
+        createSegment(5, baseMatrix, arm.Arm.at(5-1).segmentMatrix);
 
         // Generate Rectangle (hand), with origin to match top of wristJoint/Forearm
         // Should be translated to match (0,0,(0.70+2.80+2.25)), 0.17
-        // The hand is somewhat transparent?
         RectangleGeometry hand = makeRectangle(0.41f, 0.18f, 0.34f);
         Mesh meshHand(hand.vertices,
                   hand.indices,
@@ -158,11 +186,12 @@ int main(int argc, char* argv[]) {
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_base_top.png",
                   untextured);
-        meshHand.applyTransform(glm::rotate(glm::mat4(1.0f), 
-                                glm::radians(45.0f),
-                                glm::vec3(0.0f, 1.0f, 0.0f)));
-        float xDirection = -0.4f;
-        meshHand.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(xDirection, height, 0.0f)));
+        baseMatrix = glm::translate(baseMatrix, glm::vec3(0.0f, 0.41f, 0.0f));
+        baseMatrix = glm::rotate(baseMatrix, 
+                                glm::radians(90.0f),
+                                glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+        meshHand.applyTransform(baseMatrix);
+        createSegment(6, baseMatrix, arm.Arm.at(6-1).segmentMatrix);
 
         // Generate cylinders (stem1 and stem2), 0.58 / 0.045
         // Should have its own base translated to match end of hand (0,0,(0.70+2.80+2.25+0.82))
@@ -173,12 +202,41 @@ int main(int argc, char* argv[]) {
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_base_top.png",
                   untextured);
-        //height += 0.18f;
-        xDirection += -0.30;
-        meshStem1.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(xDirection, height, 0.f)));
-        meshStem1.applyTransform(glm::rotate(glm::mat4(1.0f),
-                                    glm::radians(-90.0f),
-                                    glm::vec3(0.0f, 0.0f, 1.0f)));
+        baseMatrix = glm::rotate(baseMatrix, 
+                                glm::radians(-90.0f),
+                                glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+        baseMatrix = glm::translate(baseMatrix, glm::vec3(0.0f, 1.0f, -0.15f));
+        meshStem1.applyTransform(baseMatrix);
+        createSegment(7, baseMatrix, arm.Arm.at(7-1).segmentMatrix);
+
+        // Generate Spheres (fingerJoints1 and fingerJoints2), 0.58 / 0.045
+        // Should have its base tranlated to match the end of stems (0,0,(0.70+2.80+2.25+0.82+0.58))
+        JointGeometry fingerJoint1 = makeJoint(0.06f);
+        Mesh meshFingerJoint1(fingerJoint1.vertices,
+                  fingerJoint1.indices,
+                  (shaderDirectory / "mesh.vert").string(),
+                  (shaderDirectory / "mesh.frag").string(),
+                  "assets/texture_base_top.png",
+                  untextured);
+        meshFingerJoint1.applyTransform(baseMatrix);
+        createSegment(8, baseMatrix, arm.Arm.at(8-1).segmentMatrix);
+
+        // Generate Rectangles (finger1 and finger2), 0.06
+        // Base should be translated to match end of stems (0,0,(0.70+2.80+2.25+0.82+0.58))
+        RectangleGeometry finger1 = makeRectangle(0.30f, 0.085f, 0.07f);
+        Mesh meshFinger1(finger1.vertices,
+                  finger1.indices,
+                  (shaderDirectory / "mesh.vert").string(),
+                  (shaderDirectory / "mesh.frag").string(),
+                  "assets/texture_base_top.png",
+                  untextured);
+        baseMatrix = glm::translate(baseMatrix, glm::vec3(0.0f, 0.30f, 0.0f));
+        baseMatrix = glm::rotate(baseMatrix, 
+                                glm::radians(90.0f),
+                                glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+        meshFinger1.applyTransform(baseMatrix);
+        createSegment(9, baseMatrix, arm.Arm.at(9-1).segmentMatrix);
+
 
         CylinderGeometry stem2 = makeCylinder(0.58f, 0.045f, false);
         Mesh meshStem2(stem2.vertices,
@@ -187,61 +245,46 @@ int main(int argc, char* argv[]) {
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_base_top.png",
                   untextured);
-        float yDirection = 0.35f;
-        meshStem2.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, height, yDirection)));
-        meshStem2.applyTransform(glm::rotate(glm::mat4(1.0f),
-                                    glm::radians(-90.0f),
-                                    glm::vec3(0.0f, 0.0f, 1.0f)));
+        baseMatrix = glm::rotate(baseMatrix, 
+                                glm::radians(-90.0f),
+                                glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
 
-        // Generate Spheres (fingerJoints1 and fingerJoints2), 0.58 / 0.045
-        // Should have its base tranlated to match the end of stems (0,0,(0.70+2.80+2.25+0.82+0.58))
-        JointGeometry fingerJoint1 = makeJoint(0.06f);
-        Mesh meshFingerJoint1(fingerJoint1.vertices,
-                  wristJoint.indices,
-                  (shaderDirectory / "mesh.vert").string(),
-                  (shaderDirectory / "mesh.frag").string(),
-                  "assets/texture_base_top.png",
-                  untextured);
-        height += 0.58f;
-        meshFingerJoint1.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.05f, height, 0.f)));
+        baseMatrix = glm::translate(baseMatrix, glm::vec3(0.0f, -0.3f, 0.5f));
+        meshStem2.applyTransform(baseMatrix);
+        createSegment(10, baseMatrix, arm.Arm.at(7-1).segmentMatrix);
 
         JointGeometry fingerJoint2 = makeJoint(0.06f);
         Mesh meshFingerJoint2(fingerJoint2.vertices,
-                  wristJoint.indices,
+                  fingerJoint2.indices,
                   (shaderDirectory / "mesh.vert").string(),
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_base_top.png",
                   untextured);
-        meshFingerJoint2.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.f, height, 0.05f)));
+        meshFingerJoint2.applyTransform(baseMatrix);
+        createSegment(11, baseMatrix, arm.Arm.at(8-1).segmentMatrix);
 
-        // Generate Rectangles (finger1 and finger2), 0.06
-        // Base should be translated to match end of stems (0,0,(0.70+2.80+2.25+0.82+0.58))
-        RectangleGeometry finger1 = makeRectangle(0.41f, 0.18f, 0.34f);
-        Mesh meshFinger1(finger1.vertices,
-                  finger1.indices,
-                  (shaderDirectory / "mesh.vert").string(),
-                  (shaderDirectory / "mesh.frag").string(),
-                  "assets/texture_base_top.png",
-                  untextured);
-        height += 0.06;
-        meshFinger1.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, height, 0.f)));
-
-        RectangleGeometry finger2 = makeRectangle(0.41f, 0.18f, 0.34f);
+        RectangleGeometry finger2 = makeRectangle(0.30f, 0.085f, 0.07f);
         Mesh meshFinger2(finger2.vertices,
                   finger2.indices,
                   (shaderDirectory / "mesh.vert").string(),
                   (shaderDirectory / "mesh.frag").string(),
                   "assets/texture_base_top.png",
                   untextured);
-        meshFinger2.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, height, 0.05f)));
+        baseMatrix = glm::translate(baseMatrix, glm::vec3(0.0f, 0.30f, 0.0f));
+        baseMatrix = glm::rotate(baseMatrix, 
+                                glm::radians(90.0f),
+                                glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+        meshFinger2.applyTransform(baseMatrix);
+        createSegment(12, baseMatrix, arm.Arm.at(9-1).segmentMatrix);
 
         // Anytime a parent component moves, the children components that are effected should be
         // updated to ensure there positions are still correct         
 
         constexpr float fieldOfView = glm::radians(45.0f);
         constexpr float cubeRadius = 8.f;
-        const glm::vec3 cameraTarget(0.0f, 0.0f, 0.0f);
-        const glm::vec3 worldUp(0.0f, 5.0f, 0.0f);
+        const glm::vec3 cameraTarget(0.0f, 5.0f, 0.0f);
+        const glm::vec3 worldUp(0.0f, 1.0f, 0.0f);
+
 
         while (window.isOpen()) {
 
@@ -255,67 +298,142 @@ int main(int argc, char* argv[]) {
     
                     // Base Roll
                     if (keyPressed->scancode == sf::Keyboard::Scan::A) {
-                        // Rotate Left
-                        PitchRect(meshBase, glm::radians(-2.0f));
-                        PitchCylinder(meshUpperArm, glm::radians(-2.0f));
-                        PitchCylinder(meshForearm, glm::radians(-2.0f));
+                        
+                        // The resuting transformed matrix from base
+                        glm::mat4 baseTransform = meshBase.applyTransform(glm::rotate(glm::mat4(1.0f),
+                                                                        glm::radians(-2.0f),
+                                                                        glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
 
-                        // rotating the hand is weird right now
-                        // different axes I think
-                        //PitchRect(meshHand, glm::radians(-2.0f));
+                        meshUpperArm.applyTransform(glm::rotate(glm::mat4(1.0f),
+                                                                        glm::radians(-2.0f),
+                                                                        glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
+                        
+                        meshElbowJoint.applyTransform(glm::rotate(glm::mat4(1.0f),
+                                                                glm::radians(-2.0f),
+                                                                glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
+
+                        meshForearm.applyTransform(glm::rotate(glm::mat4(1.0f),
+                                                                    glm::radians(-2.0f),
+                                                                    glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
+                        
+                        meshHand.applyTransform(glm::rotate(glm::mat4(1.0f),
+                                                                    glm::radians(-2.0f),
+                                                                    glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f))));
+                                                                
+
                     }
                     
                     if (keyPressed->scancode == sf::Keyboard::Scan::D) {
                         // Rotate Right
-                        PitchRect(meshBase, glm::radians(2.0f));
-                        PitchCylinder(meshUpperArm, glm::radians(2.0f));
-                        PitchCylinder(meshForearm, glm::radians(2.0f));
+                        // The resuting transformed matrix from base
+                        glm::mat4 baseTransform = meshBase.applyTransform(glm::rotate(glm::mat4(1.0f),
+                                                                        glm::radians(2.0f),
+                                                                        glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
 
-                        // translate back to origin
-
-                        // rotate aroudn desired axis
-
-                        // translate back to basic position
+                        baseTransform = meshUpperArm.applyTransform(glm::rotate(glm::mat4(1.0f),
+                                                                        glm::radians(2.0f),
+                                                                        glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
                         
+                        meshElbowJoint.applyTransform(glm::rotate(glm::mat4(1.0f),
+                                                                glm::radians(2.0f),
+                                                                glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
 
-                       // PitchRect(meshHand, glm::radians(2.0f));
+                        baseTransform = meshForearm.applyTransform(glm::rotate(glm::mat4(1.0f),
+                                                                    glm::radians(2.0f),
+                                                                    glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
+                        
                     }
 
                     // Shoulder Pitch
                     if (keyPressed->scancode == sf::Keyboard::Scan::W) {
                         // Up
-                        RollCylinder(meshUpperArm, glm::radians(-1.0f));
-
-                        // Rotation should occurr on the on the joint, not the arm
-                        // Once the joint it being rotated the arm should move with it
                         
+                        // Upper Arm
+                        glm::mat4 shoulderTransform = glm::mat4(1.0f);
+                        shoulderTransform = glm::translate(shoulderTransform, glm::vec3(0.0f, -2.80f, 0.0f));
+                        shoulderTransform = glm::rotate(shoulderTransform,
+                                                        glm::radians(-2.0f),
+                                                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+                        shoulderTransform = glm::translate(shoulderTransform, glm::vec3(0.0f, 2.80f, 0.0f));
+                        meshUpperArm.applyTransform(shoulderTransform);
+
+                        // Elbow Joint
+                        meshElbowJoint.applyTransform(shoulderTransform);
+                        // Forearm
+                       // glm::mat4 forearmTransform = glm::mat4(1.0f);
+                        glm::mat4 forearmTransform = glm::mat4(1.0f);
+                        forearmTransform = glm::translate(forearmTransform, glm::vec3(0.0f, (-2.25f - 2.80f), 0.0f));
+                        forearmTransform = glm::rotate(forearmTransform,
+                                                        glm::radians(-2.0f),
+                                                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+                        forearmTransform = glm::translate(forearmTransform, glm::vec3(0.0f, (2.25f + 2.80f), 0.0f));
+                        meshForearm.applyTransform(forearmTransform);
+
                     }
                     
                     if (keyPressed->scancode == sf::Keyboard::Scan::S) {
                         // Down
-                        RollCylinder(meshUpperArm, glm::radians(1.0f));
+                        glm::mat4 shoulderTransform = glm::mat4(1.0f);
+                        shoulderTransform = glm::translate(shoulderTransform, glm::vec3(0.0f, -2.80f, 0.0f));
+                        shoulderTransform = glm::rotate(shoulderTransform,
+                                                        glm::radians(2.0f),
+                                                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+                        shoulderTransform = glm::translate(shoulderTransform, glm::vec3(0.0f, 2.80f, 0.0f));
+                        meshUpperArm.applyTransform(shoulderTransform);
+
+                        meshElbowJoint.applyTransform(shoulderTransform);
+
+                        glm::mat4 forearmTransform = glm::mat4(1.0f);
+                        forearmTransform = glm::translate(forearmTransform, glm::vec3(0.0f, (-2.25f - 2.80f), 0.0f));
+                        forearmTransform = glm::rotate(forearmTransform,
+                                                        glm::radians(2.0f),
+                                                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+                        forearmTransform = glm::translate(forearmTransform, glm::vec3(0.0f, (2.25f + 2.80f), 0.0f));
+                        meshForearm.applyTransform(forearmTransform);
                     }
 
                     // Elbow Pitch
                     if (keyPressed->scancode == sf::Keyboard::Scan::R) {
                         // Up Relative to Forearm
-                        
+                        glm::mat4 forearmTransform = glm::mat4(1.0f);
+                        forearmTransform = glm::translate(forearmTransform, glm::vec3(0.0f, (-2.25f), 0.0f));
+                        forearmTransform = glm::rotate(forearmTransform,
+                                                        glm::radians(-2.0f),
+                                                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+                        forearmTransform = glm::translate(forearmTransform, glm::vec3(0.0f, (2.25), 0.0f));
+                        meshForearm.applyTransform(forearmTransform);
                     }
                     
                     if (keyPressed->scancode == sf::Keyboard::Scan::F) {
                         // Down Relative to Forearm
+
+                        glm::mat4 forearmTransform = glm::mat4(1.0f);
+                        forearmTransform = glm::translate(forearmTransform, glm::vec3(0.0f, (-2.25f), 0.0f));
+                        forearmTransform = glm::rotate(forearmTransform,
+                                                        glm::radians(2.0f),
+                                                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+                        forearmTransform = glm::translate(forearmTransform, glm::vec3(0.0f, (2.25), 0.0f));
+                        meshForearm.applyTransform(forearmTransform);
                     }
 
                     // Wrist Pitch
                     if (keyPressed->scancode == sf::Keyboard::Scan::T) {
                         // Rotate hand up
-                       // YawRect(meshHand, glm::radians(-2.0f));
+                        glm::mat4 handTransform = glm::mat4(1.0f);
+                        handTransform = glm::rotate(handTransform,
+                                                        glm::radians(2.0f),
+                                                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+                        meshHand.applyTransform(handTransform);
                         
                     }
                     
                     if (keyPressed->scancode == sf::Keyboard::Scan::G) {
                         // Rotate Hand down
-                       // YawRect(meshHand, glm::radians(2.0f));
+                        glm::mat4 handTransform = glm::mat4(1.0f);
+                        handTransform = glm::rotate(handTransform,
+                                                        glm::radians(-2.0f),
+                                                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+                        meshHand.applyTransform(handTransform);
                     }
 
                     // Gripper Claw
@@ -330,10 +448,25 @@ int main(int argc, char* argv[]) {
 
                     // Reset Pose
                     if (keyPressed->scancode == sf::Keyboard::Scan::Space) {
-                        // All joints reset to 0 degrees
 
-                        //translateRect(meshHand);
+                        meshBase.setModel(arm.Arm.at(0).originalMatrix);
 
+                        meshShoulderJoint.setModel(arm.Arm.at(1).originalMatrix);
+                        meshUpperArm.setModel(arm.Arm.at(2).originalMatrix);
+
+                        meshElbowJoint.setModel(arm.Arm.at(3).originalMatrix);
+                        meshForearm.setModel(arm.Arm.at(4).originalMatrix);
+
+                        meshWristJoint.setModel(arm.Arm.at(5).originalMatrix);
+                        meshHand.setModel(arm.Arm.at(6).originalMatrix);
+
+                        meshStem1.setModel(arm.Arm.at(7).originalMatrix);
+                        meshFingerJoint1.setModel(arm.Arm.at(8).originalMatrix);
+                        meshFinger1.setModel(arm.Arm.at(9).originalMatrix);
+
+                        meshStem2.setModel(arm.Arm.at(10).originalMatrix);
+                        meshFingerJoint2.setModel(arm.Arm.at(11).originalMatrix);
+                        meshFinger2.setModel(arm.Arm.at(12).originalMatrix);
                     }
                 }
             }
@@ -349,7 +482,7 @@ int main(int argc, char* argv[]) {
                 std::tan(fieldOfView * 0.5f) * limitingAspect);
             const float cameraDistance = cubeRadius / std::sin(limitingHalfFov) * 1.1f;
             const glm::mat4 view = glm::lookAt(cameraTarget + glm::vec3(0.0f,
-                                                                        0.0f,
+                                                                        10.0f,
                                                                         cameraDistance),
                                                cameraTarget,
                                                worldUp);
@@ -361,14 +494,23 @@ int main(int argc, char* argv[]) {
 
 
             meshBase.draw(view, projection);
+
             meshShoulderJoint.draw(view, projection);
             meshUpperArm.draw(view, projection);
+
             meshElbowJoint.draw(view, projection);
             meshForearm.draw(view, projection);
+
             meshWristJoint.draw(view, projection);
-            //meshHand.draw(view, projection);
-            //meshStem1.draw(view, projection);
-            //meshStem2.draw(view, projection);
+            meshHand.draw(view, projection);
+
+            meshStem1.draw(view, projection);
+            meshFingerJoint1.draw(view, projection);
+            meshFinger1.draw(view, projection);
+
+            meshStem2.draw(view, projection);
+            meshFingerJoint2.draw(view, projection);
+            meshFinger2.draw(view, projection);
 
             window.display();
         }

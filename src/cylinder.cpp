@@ -18,6 +18,7 @@
 
 // Code based on sphere/cube starter code
 
+// Y
 void PitchCylinder(Mesh& mesh, float radians) {
     // do whatever to rotate
     mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
@@ -25,18 +26,20 @@ void PitchCylinder(Mesh& mesh, float radians) {
                         glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
 }
 
+// Z
 void RollCylinder(Mesh& mesh, float radians) {
     // do whatever to rotate
     mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
                         radians,
-                        glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f))));
+                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f))));
 }
 
+// Y
 void YawCylinder(Mesh& mesh, float radians) {
     // do whatever to rotate
     mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
                         radians,
-                        glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f))));
+                        glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f))));
 }
 
 CylinderGeometry makeCylinder(float height, float radius, bool base) {
@@ -72,7 +75,7 @@ CylinderGeometry makeCylinder(float height, float radius, bool base) {
         // Text coordinates using u and v
 
         if (base == true) {
-            vertex.texCoord = glm::vec2(u, v);
+            vertex.texCoord = glm::vec2(radius * cos(theta), radius * sin(theta));
         }
 
         cyl.vertices.push_back(vertex);
@@ -93,7 +96,9 @@ CylinderGeometry makeCylinder(float height, float radius, bool base) {
         const float v = static_cast<float>(stack) / static_cast<float>(stacks_wall);
 
         for (unsigned int slice = 0; slice <= slices_wall; slice++) {
+            //const float u = static_cast<float>(slice) / static_cast<float>(slices_wall);
             const float u = static_cast<float>(slice) / static_cast<float>(slices_wall);
+            //const float angle_text = 2.0f * pi * slice;
             const float theta = 2.0f * pi * u;
 
             const glm::vec3 position(radius * std::sin(theta),
@@ -105,7 +110,9 @@ CylinderGeometry makeCylinder(float height, float radius, bool base) {
             vertex.normal = glm::vec3(std::cos(theta), 0, std::sin(theta)); // Change
             // Text coordinates using u and v
             if (base == false) {
-                vertex.texCoord = glm::vec2(u, v); // double check this
+                const float u_t = radius * std::cos(theta);
+                const float v_t = radius * std::sin(theta);
+                vertex.texCoord = glm::vec2(u_t, v_t); // double check this
             }
             cyl.vertices.push_back(vertex);
         }

@@ -33,21 +33,22 @@ Vertex makeVertex(const glm::vec3& position, const glm::vec2& texCoord, int face
         vertex.normal = glm::vec3(-1.0f, 0.0f, 0.0f);
     } 
     else if (face == 2) { // Right
-        vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
-    }
-    else if (face == 3) { // Left
-        vertex.normal = glm::vec3(0.0f, -1.0f, 0.0f);
-    }
-    else if (face == 4) { // Top
         vertex.normal = glm::vec3(0.0f, 0.0f, 1.0f);
     }
-    else { // Bottom
+    else if (face == 3) { // Left
         vertex.normal = glm::vec3(0.0f, 0.0f, -1.0f);
+    }
+    else if (face == 4) { // Top
+        vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+    }
+    else { // Bottom
+        vertex.normal = glm::vec3(0.0f, -1.0f, 0.0f);
     }
 
     return vertex;
 }
 
+// Y
 void PitchRect(Mesh& mesh, float radians) {
 
     mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
@@ -56,17 +57,19 @@ void PitchRect(Mesh& mesh, float radians) {
                                     // Rotation of 0, 1, 0 for up and down only
 }
 
+// Z
 void RollRect(Mesh& mesh, float radians) {
     
     mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
                                     radians,
-                                    glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f))));
+                                    glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f))));
 }
 
+// X
 void YawRect(Mesh& mesh, float radians) {
     mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
                                     radians,
-                                    glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f))));
+                                    glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f))));
 
 }
 

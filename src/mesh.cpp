@@ -186,9 +186,15 @@ Mesh::~Mesh()
     }
 }
 
-void Mesh::applyTransform(const glm::mat4& transform)
+glm::mat4 Mesh::applyTransform(const glm::mat4& transform)
 {
     model *= transform;
+    return model;
+}
+
+glm::mat4 Mesh::getModel()
+{
+    return model;
 }
 
 void Mesh::draw(const glm::mat4& view, const glm::mat4& projection) const
