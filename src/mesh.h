@@ -54,6 +54,7 @@ public:
     // Applies an affine transform in mesh-local coordinates. Repeated transforms
     // are post-multiplied onto the current model transform.
     glm::mat4 applyTransform(const glm::mat4& transform);
+    void setTransform(const glm::mat4& transform);
     glm::mat4 getModel();
 
     // Draws the indexed triangles using the supplied view and projection matrices.

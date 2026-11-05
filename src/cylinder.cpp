@@ -64,9 +64,9 @@ CylinderGeometry makeCylinder(float height, float radius, bool base) {
         const float u = static_cast<float>(slice) / static_cast<float>(slices_circle);
         // find the angle of the current slice
         const float theta = 2.0f * pi * u;
-        // Create the vecotr with 3 points, (x, y, z)
+        // Create the vector with 3 points, (x, y, z)
         const glm::vec3 position(radius * std::sin(theta),
-                                 0,
+                                 height,
                                  radius * std::cos(theta));
         Vertex vertex;
         vertex.position = position;
@@ -75,7 +75,7 @@ CylinderGeometry makeCylinder(float height, float radius, bool base) {
         // Text coordinates using u and v
 
         if (base == true) {
-            vertex.texCoord = glm::vec2(radius * cos(theta), radius * sin(theta));
+            vertex.texCoord = glm::vec2((radius * cos(theta)), (radius * sin(theta)));
         }
 
         cyl.vertices.push_back(vertex);
@@ -102,7 +102,7 @@ CylinderGeometry makeCylinder(float height, float radius, bool base) {
             const float theta = 2.0f * pi * u;
 
             const glm::vec3 position(radius * std::sin(theta),
-                                 -(height / stack),
+                                 (height / stack),
                                  radius * std::cos(theta));
             Vertex vertex;
             vertex.position = position;

@@ -192,6 +192,10 @@ glm::mat4 Mesh::applyTransform(const glm::mat4& transform)
     return model;
 }
 
+void Mesh::setTransform(const glm::mat4& transform) {
+    model = transform;
+}
+
 glm::mat4 Mesh::getModel()
 {
     return model;
