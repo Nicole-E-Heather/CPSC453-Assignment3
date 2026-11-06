@@ -48,37 +48,6 @@ Vertex makeVertex(const glm::vec3& position, const glm::vec2& texCoord, int face
     return vertex;
 }
 
-// Y
-void PitchRect(Mesh& mesh, float radians) {
-
-    mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
-                                    radians,
-                                    glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f))));
-                                    // Rotation of 0, 1, 0 for up and down only
-}
-
-// Z
-void RollRect(Mesh& mesh, float radians) {
-    
-    mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
-                                    radians,
-                                    glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f))));
-}
-
-// X
-void YawRect(Mesh& mesh, float radians) {
-    mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
-                                    radians,
-                                    glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f))));
-
-}
-
-void translateRect(Mesh& mesh) {
-    
-    mesh.applyTransform(glm::translate(glm::mat4(1.0f), glm::vec3(1.0f)));
-
-}
-
 RectangleGeometry makeRectangle(float l, float w, float h) {
 
     // Code based on implementation of cube.cpp

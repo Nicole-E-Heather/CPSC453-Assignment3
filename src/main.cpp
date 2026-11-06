@@ -68,6 +68,8 @@ int main(int argc, char* argv[]) {
 
     try {
 
+
+        // Setup code taken directly from starter code
         sf::ContextSettings settings;
         settings.majorVersion = 4;
         settings.minorVersion = 0;
@@ -104,9 +106,11 @@ int main(int argc, char* argv[]) {
         textured.shininess = 64.0f;
 
         untextured.ambient = glm::vec3(1.0f);
-        untextured.shininess = 64.0f;
+        untextured.shininess = 100.0f;
     
-        // Tranforsm applied to meshes here are not strictly necessary, mostly used for
+        // Generation of Meshes is based heavily on startercode
+
+        // Transform applied to meshes here are not strictly necessary, mostly used for
         // setup and geometry testing.
 
         // Start by generating cylinder (base), centered at origin (0,0,0) from the 
@@ -294,8 +298,10 @@ int main(int argc, char* argv[]) {
                                  * handMatrix * stem2Matrix * fingerJoint2Matrix * finger2Matrix);
 
         // Anytime a parent component moves, the children components that are effected should be
-        // updated to ensure there positions are still correct         
-        constexpr float fieldOfView = glm::radians(45.0f);
+        // updated to ensure there positions are still correct   
+        
+        // Taken directly from starter code with value differences
+        constexpr float fieldOfView = glm::radians(30.0f);
         constexpr float cameraRadius = 5.0f;
         const glm::vec3 cameraTarget(0.0f, 5.0f, 0.0f);
         const glm::vec3 worldUp(0.0f, 1.0f, 0.0f);
@@ -314,36 +320,36 @@ int main(int argc, char* argv[]) {
                     // Base Roll: Angle can be whatever, 360 degress is fair
                     if (keyPressed->scancode == sf::Keyboard::Scan::A) {
                         // Rotate Left
-                        angleBase += 1.0f;
+                        angleBase -= 1.0f;
                     }
                     
                     if (keyPressed->scancode == sf::Keyboard::Scan::D) {
                         // Rotate Right
-                        angleBase -= 1.0f;
+                        angleBase += 1.0f;
                     }
 
                     // Shoulder Pitch: 
                     if (keyPressed->scancode == sf::Keyboard::Scan::W) {
 
                         // Up
-                        if (angleShoulder >= MAX_ANGLE_SHOULDER) {
-
-                            std::cout << "Max Range for Shoulder Acheived." << std::endl;
-                        }
-                        else {
-                            angleShoulder += 1.0f;
-                        }
-                    }
-                    
-                    if (keyPressed->scancode == sf::Keyboard::Scan::S) {
-
-                        // Down
                         if (angleShoulder <= -MAX_ANGLE_SHOULDER) {
 
                             std::cout << "Max Range for Shoulder Acheived." << std::endl;
                         }
                         else {
                             angleShoulder -= 1.0f;
+                        }
+                    }
+                    
+                    if (keyPressed->scancode == sf::Keyboard::Scan::S) {
+
+                        // Down
+                        if (angleShoulder >= MAX_ANGLE_SHOULDER) {
+
+                            std::cout << "Max Range for Shoulder Acheived." << std::endl;
+                        }
+                        else {
+                            angleShoulder += 1.0f;
                         }
                     }
 

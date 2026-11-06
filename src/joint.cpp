@@ -16,25 +16,7 @@
 #include "mesh.h"
 #include "joint.h"
 
-
-void rotateShoulderJoint(Mesh& mesh, float radians)
-{
-    mesh.applyTransform(glm::rotate(glm::mat4(1.0f),
-                                    radians,
-                                    glm::vec3(0.0f, 1.0f, 0.0f)));
-}
-
-void rotateElbowJoint(Mesh& mesh, float radians) {
-
-}
-
-void rotateWristJoint(Mesh& mesh, float radians) {
-
-}
-
-void rotateFingerJoint(Mesh& mesh, float radians) {
-
-}
+// Code taken directly from sphere.cpp with the addition of controllalble radius
 
 JointGeometry makeJoint(float radius)
 {
@@ -56,14 +38,16 @@ JointGeometry makeJoint(float radius)
         for (unsigned int slice = 0; slice <= slices; ++slice) {
             const float u = static_cast<float>(slice) / static_cast<float>(slices);
             const float phi = 2.0f * pi * u;
-            const glm::vec3 normal(sinTheta * std::cos(phi),
+
+            const glm::vec3 normal(sinTheta * std::cos(phi), // change
                                    cosTheta,
                                    sinTheta * std::sin(phi));
 
             Vertex vertex;
             vertex.position = normal;
             vertex.normal = normal;
-           // vertex.texCoord = glm::vec2(2*u, 1.0f - v);
+            // No texture coordinate for any joints
+            //vertex.texCoord = glm::vec2(2*u, 1.0f - v);
             sphere.vertices.push_back(vertex);
         }
     }

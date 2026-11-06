@@ -20,7 +20,3 @@ struct JointGeometry {
 };
 
 JointGeometry makeJoint(float radius);
-
-void rotateShoulderJoint(Mesh& mesh, float radians);
-void rotateWristJoint(Mesh& mesh, float radians);
-void rotateFingerJoint(Mesh& mesh, float radians);
