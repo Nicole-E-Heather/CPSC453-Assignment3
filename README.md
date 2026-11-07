@@ -16,7 +16,7 @@ cmake -B build
 
 cmake --build build
 
-./build/bin/Debug/main -- or - ./build/bin/main
+./build/bin/Debug/main   -- or --   ./build/bin/main
 
 ## Robot Arm Interaction Controls
 
