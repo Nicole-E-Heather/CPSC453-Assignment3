@@ -6,33 +6,21 @@ This template is loosely based on the [original SFML CMake template](https://git
 
 OpenGL is loaded via [GLAD](https://wikis.khronos.org/opengl/OpenGL_Loading_Library), and GLM supplies model, view, and projection matrices. Executables use an OpenGL 4.0 Core context and the GLSL shaders are copied by CMake into a `shaders` directory beside each executable.
 
-## Meshes, Materials, and Shaders
+## For This Assignment
 
-The renderer separates mesh data, material settings, and shader programs:
+The files created/modfied for this assignmeny are main.cpp, joint.cpp, cylinder.cpp and rectangle.cpp. This includes their coresponding header files.
+CMakeLists.txt was modified for proper compilation.
 
-- `Vertex` groups a position, normal, texture coordinate, and color. The current `Mesh` uses this fixed vertex layout for indexed triangle geometry; a position-only constructor fills in default values for the other attributes.
-- `Material` holds basic ambient, diffuse, and specular lighting values, shininess, and a switch to enable or disable lighting.
-- `Mesh` uploads vertices and indices to OpenGL buffers, optionally loads a diffuse texture, applies an object transform, and draws using a `Shader`. This supports textured or untextured meshes and lit or unlit rendering with the current shader pair.
-- `Shader` loads, compiles, and links vertex and fragment GLSL files, then provides helpers for setting uniforms such as transforms and material properties.
+# In order to run use the following commands:
+cmake -B build
+cmake --build build
+./build/bin/Debug/main -- or - ./build/bin/main
 
-The current implementation has one standard set of vertex attributes and supports one optional diffuse texture per mesh. It is a starting point for extending to other attribute layouts, multiple texture maps, or specialized shaders as needed.
+# Robot Arm Interaction Controls
 
-## Executables
-
-Two textured mesh executables are provided:
-
-- `sphere` procedurally generates vertices, normals, triangle indices, and texture coordinates for a 64-by-32 latitude/longitude sphere.
-- `cube` hard-codes the cube's vertices and texture coordinates. Each face has its own vertices and maps the full texture to that face.
-
-Both programs require a texture image path as their only argument:
-
-```sh
-./build/bin/sphere path/to/texture.png
-./build/bin/cube path/to/texture.png
-```
-
-Texture images are loaded by [`stb_image`](https://github.com/nothings/stb) (fetched by CMake), converted to RGBA, and vertically flipped to match OpenGL texture coordinates. Supported image formats are those supported by `stb_image`. The sphere expects a square texture image.
-
-Both meshes rotate automatically using elapsed time measured with an SFML clock. The left and right arrow keys rotate the mesh in either direction, and Escape closes the window.
-
-For questions or concerns, please get in touch with the instructor or one of the TAs.
+Base Roll: A - left, D - right
+Shoulder Pitch: W - up, S - down
+Elbow Pitch: R - up, F - down
+Wrist Pitch: T - up, G - down
+Claw: O - open, C - close
+Reset Pose: Resets joint angles

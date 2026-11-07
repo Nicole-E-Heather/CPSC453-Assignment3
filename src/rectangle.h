@@ -11,8 +11,3 @@ struct RectangleGeometry {
 };
 
 RectangleGeometry makeRectangle(float l, float w, float h);
-void translateRect(Mesh& mesh);
-
-void PitchRect(Mesh& mesh, float radians);
-void RollRect(Mesh& mesh, float radians);
-void YawRect(Mesh& mesh, float radians);
