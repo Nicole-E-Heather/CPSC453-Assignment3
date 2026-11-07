@@ -8,7 +8,7 @@ OpenGL is loaded via [GLAD](https://wikis.khronos.org/opengl/OpenGL_Loading_Libr
 
 # For This Assignment
 
-The files created/modfied for this assignmeny are main.cpp, joint.cpp, cylinder.cpp and rectangle.cpp. This includes their coresponding header files.
+The files created/modfied for this assignment are main.cpp, joint.cpp, cylinder.cpp and rectangle.cpp. This includes their coresponding header files.
 CMakeLists.txt was modified for proper compilation.
 
 ## In order to run use the following commands:
