@@ -50,7 +50,6 @@ float angleFingers = 0.0f; // for finger joints and fingers
 RobotArm arm; // global for easy access
 
 
-
 void createSegment(unsigned int partIndex, glm::mat4 segment) {
 
     Segment newSegment = {
@@ -67,7 +66,6 @@ int main(int argc, char* argv[]) {
     // Code based off of repository examples
 
     try {
-
 
         // Setup code taken directly from starter code
         sf::ContextSettings settings;
@@ -109,13 +107,10 @@ int main(int argc, char* argv[]) {
         untextured.shininess = 100.0f;
     
         // Generation of Meshes is based heavily on startercode
-
         // Transform applied to meshes here are not strictly necessary, mostly used for
         // setup and geometry testing.
 
         // Start by generating cylinder (base), centered at origin (0,0,0) from the 
-
-        // This matrix is the "world/base" matrix in which all starting positions should be applied to
         CylinderGeometry base = makeCylinder(1.10f, 0.70f, true);
         Mesh meshBase(base.vertices,
                   base.indices,
@@ -188,6 +183,7 @@ int main(int argc, char* argv[]) {
         glm::mat4 wristMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.25f, 0.0f));
 
         meshWristJoint.setTransform(baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix);
+
         createSegment(5, baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix);
 
         // Generate Rectangle (hand), with origin to match top of wristJoint/Forearm
@@ -203,6 +199,7 @@ int main(int argc, char* argv[]) {
                                             glm::radians(90.0f),
                                             glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
         meshHand.setTransform(baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix * handMatrix);
+
         createSegment(6, baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix * handMatrix);
 
         // Generate cylinders (stem1 and stem2), 0.58 / 0.045
@@ -215,6 +212,7 @@ int main(int argc, char* argv[]) {
                   untextured);
         glm::mat4 stem1Matrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)))
                                     * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.41f, -0.15f));
+
         meshStem1.setTransform(baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix * handMatrix * stem1Matrix);
 
         createSegment(7, baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix * handMatrix * stem1Matrix);
@@ -228,6 +226,7 @@ int main(int argc, char* argv[]) {
                   "assets/texture_base_top.png",
                   untextured);
         glm::mat4 fingerJoint1Matrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.58f, 0.0f));
+
         meshFingerJoint1.setTransform(baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix 
                                         * handMatrix * stem1Matrix * fingerJoint1Matrix);
 
@@ -245,6 +244,7 @@ int main(int argc, char* argv[]) {
         glm::mat4 finger1Matrix = glm::rotate(glm::mat4(1.0f), 
                                 glm::radians(90.0f),
                                 glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+
         meshFinger1.setTransform(baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix 
                                         * handMatrix * stem1Matrix * fingerJoint1Matrix * finger1Matrix);
 
@@ -261,6 +261,7 @@ int main(int argc, char* argv[]) {
                   untextured);
         glm::mat4 stem2Matrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)))
                                 * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.41f, 0.15f));
+
         meshStem2.setTransform(baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix 
                                  * handMatrix * stem2Matrix);
 
@@ -275,6 +276,7 @@ int main(int argc, char* argv[]) {
                   "assets/texture_base_top.png",
                   untextured);
         glm::mat4 fingerJoint2Matrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.58f, 0.0f));
+
         meshFingerJoint2.setTransform(baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix 
                                  * handMatrix * stem2Matrix * fingerJoint2Matrix);
 
@@ -291,6 +293,7 @@ int main(int argc, char* argv[]) {
         glm::mat4 finger2Matrix = glm::rotate(glm::mat4(1.0f), 
                                 glm::radians(90.0f),
                                 glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f)));
+
         meshFinger2.setTransform(baseMatrix * shoulderMatrix * elbowMatrix * wristMatrix 
                                  * handMatrix * stem2Matrix * fingerJoint2Matrix * finger2Matrix);
 
@@ -454,10 +457,6 @@ int main(int argc, char* argv[]) {
                         angleFingers = 0.0f;
                     }
 
-                    //std::cout << angleShoulder << std::endl;
-                    //std::cout << angleElbow << std::endl;
-                    //std::cout << angleWrist << std::endl;
-                    //std::cout << angleFingers << std::endl;
                 }
             }
 
@@ -465,7 +464,7 @@ int main(int argc, char* argv[]) {
             // Makes tracking operations much simpler.
 
             // The "model" matrix is what takes the local shape coordinates and translated them to the world system
-            // Different way of putting it is taking the Global Frame (origin/parent) and translating to local coordinates
+            // Different way of putting it is taking the Global Frame (origin/parent) and translating to local frames/coordinates
             glm::mat4 modelBase = glm::rotate(glm::mat4(1.0f), glm::radians(angleBase), glm::vec3(0.0f, 1.0f, 0.0f));
 
             glm::mat4 modelShoulder = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.10f, 0.0f)) 
@@ -499,7 +498,7 @@ int main(int argc, char* argv[]) {
             meshBase.setTransform(modelBase); // Parent component already centered at the origin, only needs rotation
 
             // All children must accumulate the transforms of its parents.
-            // Multiplied left to right
+            // Multiplied left to right (E0 -> En)
             meshShoulderJoint.setTransform(modelBase * modelShoulder);
             meshUpperArm.setTransform(modelBase * modelShoulder);
 

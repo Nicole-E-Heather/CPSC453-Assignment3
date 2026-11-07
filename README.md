@@ -18,3 +18,9 @@ cmake --build build
 
 # Robot Arm Interaction Controls
 
+Base Roll: A - left, D - right
+Shoulder Pitch: W - up, S - down
+Elbow Pitch: R - up, F - down
+Wrist Pitch: T - up, G - down
+Claw: O - open, C - close
+Reset Pose: Resets joint angles

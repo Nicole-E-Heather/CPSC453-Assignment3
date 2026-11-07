@@ -50,7 +50,8 @@ CylinderGeometry makeCylinder(float height, float radius, bool base) {
         if (base == true) {
             // Texture exists on a 1.0 < u < 1.0 and 1.0 < v < 1.0 plane
             // Radius will always be 0.5 so we multiply sin and cos to get the x and y values
-            // then add on 0.5 to ensure coordinates are shifted to match the texture
+            // then add on 0.5 to ensure coordinates are shifted to match the texture 
+            // i.e we start at (1/2, 1/2)
             vertex.texCoord = glm::vec2(0.5f + (0.5f * std::cos(theta)), 0.5f + (0.5f * std::sin(theta)));
         }
 
@@ -58,8 +59,8 @@ CylinderGeometry makeCylinder(float height, float radius, bool base) {
         // Handle indices: starting with 0 because the point of the triangle is always the center
     }
 
+    const unsigned int center = 0;
     for (int slice = 0; slice < slices_circle; slice++) {
-        const unsigned int center = 0;
         const unsigned int topLeft = slice + 1; // one corner of the triangle
         const unsigned int topRight = slice + 2; // scond corner of the triangle
 
@@ -80,33 +81,31 @@ CylinderGeometry makeCylinder(float height, float radius, bool base) {
             const float theta = 2.0f * pi * u;
 
             const glm::vec3 position(radius * std::cos(theta),
-                                 (height / stack), // Each vertex is a portion of the heigh depending on the stack
+                                 height * v, // Height of the stack essetnially
                                  radius * std::sin(theta));
             Vertex vertex;
             vertex.position = position;
             // Normal vector points out
-            vertex.normal = glm::vec3(radius * std::cos(theta), 0, radius * std::sin(theta));
+            vertex.normal = glm::vec3(std::cos(theta), 0, std::sin(theta));
             // Text coordinates using u and v
             if (base == false && radius != 0.045f) {
-                vertex.texCoord = glm::vec2(u, v); // double check this
-
-                //float u_t = radius * std::cos(2.0f * pi * u);
-               // float v_t = radius * std::sin(2.0f * pi * v);
-
-               // vertex.texCoord = glm::vec2(u_t, v_t);
+                vertex.texCoord = glm::vec2(u, v);
             }
             cyl.vertices.push_back(vertex);
         }
     } 
 
     // Add cylinder walls to indices, exact same as sphere from starter code
+    // Just ensure that slices do not start at 0 since that is reserved for
+    // top circle.
     const unsigned int rowLength = slices_wall + 1;
     for (unsigned int stack = 0; stack < stacks_wall; ++stack) {
-        for (unsigned int slice = 0; slice < slices_wall; ++slice) {
-        const unsigned int topLeft = stack * rowLength + slice;
-        const unsigned int bottomLeft = topLeft + rowLength;
-        const unsigned int topRight = topLeft + 1;
-        const unsigned int bottomRight = bottomLeft + 1;
+        for (unsigned int slice = slices_circle + 1; slice < slices_wall + slices_circle + 1; ++slice) {
+
+            const unsigned int topLeft = stack * rowLength + slice;
+            const unsigned int bottomLeft = topLeft + rowLength;
+            const unsigned int topRight = topLeft + 1;
+            const unsigned int bottomRight = bottomLeft + 1;
 
         cyl.indices.insert(cyl.indices.end(),
                                   {topLeft, topRight, bottomLeft,
